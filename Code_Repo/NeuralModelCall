@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Nov 21 00:58:34 2020
+
+@author: soumyadutta
+"""
+
+from keras.models import load_model
+import NeturalNetwork
+#import preprocess
+
+
+import matplotlib.pyplot as plt
+from tensorflow.python.keras.preprocessing.text import Tokenizer
+from tensorflow.python.keras.preprocessing.sequence import pad_sequences
+from keras.models import Sequential
+from keras.layers import Dense, Embedding, GRU, LSTM, Bidirectional
+from keras.layers.embeddings import Embedding
+from keras.initializers import Constant
+from keras.callbacks import ModelCheckpoint
+from keras.models import load_model
+
+
+
+
+newmodel = load_model('myfirstmodel.h5')
+
+myreview = "@USER @USER @USER The craziest thing about his tweet is he is calling SOMEONE ELSE OUT for being racist ."
+
+is_sarcasm = NeturalNetwork.predict_sarcasm(newmodel,myreview)
+print(is_sarcasm)

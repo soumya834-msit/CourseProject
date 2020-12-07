@@ -1,0 +1,60 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sat Nov 21 01:32:58 2020
+
+@author: soumyadutta
+"""
+
+import preprocess
+import NonNeturalNetwork
+import NeturalNetwork
+import pickle
+
+
+NeuralModelCrateFresh = False
+NonNeuralNetwork = True
+NonNeuralNetworkModelSave = True 
+
+df_train = preprocess.read_jsonl_to_dataFrame('/users/soumyadutta/desktop/CourseProject/data/train.jsonl',"label","response","context")
+print("Training data DataFrame -->",df_train.head())
+df_test = preprocess.read_jsonl_to_dataFrame('/users/soumyadutta/desktop/CourseProject/data/test.jsonl',"id","response","context")
+print("Test data DataFrame -->",df_test.head())
+
+df_train["Combined Context"] = df_train["response"] + df_train["context"].astype(str)
+
+if NonNeuralNetwork:
+    clean_response = preprocess.CleanTokenize(df_train,"Combined Context")
+    #clean_response = ' '.join([str(elem) for elem in clean_response]) 
+    print(clean_response[0:10])
+
+    df_train["cleaned_respose"] = clean_response
+    myreview = "@USER @USER @USER The craziest thing about his tweet is he is calling SOMEONE ELSE OUT for being racist ."
+    if NonNeuralNetworkModelSave:
+        NonNeturalNetwork.nonDeepLearningModel(df_train,myreview)
+    #load the file
+    model_nb = pickle.load(open('model_nb.sav', 'rb'))
+    model_svc = pickle.load(open('model_svc.sav', 'rb'))
+    model_lr = pickle.load(open('model_lr.sav', 'rb'))
+    model_random = pickle.load(open('model_randomforest.sav', 'rb'))
+    model_voteclf = pickle.load(open('model_vottingclf.sav', 'rb'))
+    
+    print("Naive Baise my review ",model_nb.predict([myreview]))  # be sure to put "myreview" inside square brackets
+    print("svc my review ",model_svc.predict([myreview]))  # be sure to put "myreview" inside squar    
+    print("logistic Regression my review ",model_lr.predict([myreview]))  # be sure to put "myreview" inside squar  
+    print("Random Forest Regression my review ",model_random.predict([myreview]))  # be sure to put "myreview" inside squar  
+    print("Votting Essnece Classifier my review ",model_voteclf.predict([myreview]))
+if NeuralModelCrateFresh:
+    #df_train["Combined Context"] = df_train["response"] + df_train["context"].astype(str) 
+    clean_response = preprocess.CleanTokenizeforNeuralNetwork(df_train,"response")
+    df_train["cleaned_respose"] = clean_response
+    df_train["label"] = df_train.apply(lambda x: 1  if x["label"] =="SARCASM" else 0,axis=1)
+    print(clean_response[0:10])
+
+
+    validation_split = 0.1
+    max_list, max_length = preprocess.find_max_length(clean_response)
+
+    print("Maximum List",max_list)
+    print("Maximum Lenght of list",max_length)
+    NeturalNetwork.bidirectionalModelCrationAndSave(df_train,max_length,validation_split,clean_response)
